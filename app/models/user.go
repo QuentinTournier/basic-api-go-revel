@@ -2,7 +2,7 @@ package models
 
 import (
 	"gopkg.in/mgo.v2/bson"
-	"myapp/app/models/mongodb"
+	"github.com/PolytechLyon/cloud-project-equipe-8/app/models/mongodb"
 )
 
 type User struct{

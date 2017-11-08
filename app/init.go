@@ -2,8 +2,7 @@ package app
 
 import (
 	"github.com/revel/revel"
-	//"log"
-	"myapp/app/models/mongodb"
+	"github.com/PolytechLyon/cloud-project-equipe-8/app/models/mongodb"
 )
 
 var (

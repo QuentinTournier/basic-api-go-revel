@@ -5,7 +5,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/revel/revel"
 	"encoding/json"
-	"myapp/app/models"
+	"github.com/PolytechLyon/cloud-project-equipe-8/app/models"
 )
 
 type UserController struct{
