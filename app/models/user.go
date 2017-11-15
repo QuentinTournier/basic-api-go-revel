@@ -3,13 +3,16 @@ package models
 import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/PolytechLyon/cloud-project-equipe-8/app/models/mongodb"
+	"time"
+	"github.com/kpawlik/geojson"
 )
 
 type User struct{
 ID     bson.ObjectId     `json:"id" bson:"_id"`
-Nom       string     `json:"nom" bson:"nom"`
-Prenom       string     `json:"prenom" bson:"prenom"`
-Age       int     `json:"age" bson:"age"`
+FirstName       string     `json:"firstName" bson:"firstName"`
+LastName       string     `json:"lastName" bson:"lastName"`
+BirthDay       time.Time     `json:"birthDay" bson:"birthDay"`
+Position       geojson.Point     `json:"position" bson:"position"`
 }
 
 
@@ -36,7 +39,7 @@ func (m User) UpdateUser() error{
 		"_id": m.ID,
 	}, bson.M{
 		"$set": bson.M{
-"nom": m.Nom,"prenom": m.Prenom,"age": m.Age,},
+"firstName": m.FirstName,"lastName": m.LastName,"birthDay": m.BirthDay,"position": m.Position,},
 
 	})
 	return err
@@ -59,9 +62,11 @@ func GetUsers() ([]User, error) {
 		users []User
 		err   error
 	)
+
 	c := newUserCollection()
 	defer c.Close()
-	err = c.Session.Find(nil).All(&users)
+
+	err = c.Session.Find(nil).Sort("-birthDay").All(&users)
 	return users, err
 }
 
