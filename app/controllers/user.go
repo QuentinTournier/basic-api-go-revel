@@ -6,6 +6,7 @@ import (
 	"github.com/revel/revel"
 	"encoding/json"
 	"github.com/PolytechLyon/cloud-project-equipe-8/app/models"
+	"strconv"
 )
 
 type UserController struct{
@@ -13,12 +14,20 @@ type UserController struct{
 }
 
 
-func (c UserController) Index() revel.Result {  
+func (c UserController) Index() revel.Result {
 	var (
 		users []models.User
 		err error
+		page int
 	)
-	users, err = models.GetUsers()
+
+	page, err = strconv.Atoi(c.Params.Get("page"))
+
+	if err != nil{
+		page = 1
+	}
+
+	users, err = models.GetUsers(page)
 	if err != nil{
 		errResp := buildErrResponse(err,"500")
 		c.Response.Status = 500
