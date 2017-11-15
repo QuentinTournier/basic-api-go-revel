@@ -70,7 +70,7 @@ func DeleteAllUser() error{
 
 // GetUsers Get all User from database and returns
 // list of User on success
-func GetUsers() ([]User, error) {
+func GetUsers(page int) ([]User, error) {
 	var (
 		users []User
 		err   error
@@ -79,7 +79,7 @@ func GetUsers() ([]User, error) {
 	c := newUserCollection()
 	defer c.Close()
 
-	err = c.Session.Find(nil).Sort("-birthDay").All(&users)
+	err = c.Session.Find(nil).Sort("-birthDay").Skip((page-1)*100).Limit(100).All(&users)
 	return users, err
 }
 
