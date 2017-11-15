@@ -82,7 +82,7 @@ func (c UserController) Create() revel.Result {
     return c.RenderJSON(user)
 }
 
-func (c UserController) Update() revel.Result {  
+func (c UserController) Update(id string) revel.Result {
 	var (
     	user models.User
     	err error
@@ -136,4 +136,47 @@ func (c UserController) Delete(id string) revel.Result {
 	} 
 	c.Response.Status = 204
     return c.RenderJSON(nil)
+}
+
+func (c UserController) DeleteAll() revel.Result {
+	var (
+    	err error
+    )
+
+	err = models.DeleteAllUser()
+	if err != nil{
+		errResp := buildErrResponse(err,"500")
+	c.Response.Status = 500
+	return c.RenderJSON(errResp)
+	}
+	c.Response.Status = 204
+
+    return c.RenderJSON(nil)
+}
+
+
+func (c UserController) CreateAll() revel.Result {
+	var (
+		users []models.User
+		err error
+	)
+
+	err = json.NewDecoder(c.Request.GetBody()).Decode(&users)
+	if err != nil {
+		errResp := buildErrResponse(err, "403")
+		c.Response.Status = 403
+		return c.RenderJSON(errResp)
+	}
+
+	for _,user := range users {
+		user, err = models.AddUser(user)
+		if err != nil{
+			errResp := buildErrResponse(err,"500")
+			c.Response.Status = 500
+			return c.RenderJSON(errResp)
+		}
+	}
+
+	c.Response.Status = 201
+	return c.RenderJSON(nil)
 }
