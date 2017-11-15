@@ -26,8 +26,10 @@ GET     /public/*filepath                       Static.Serve("public")
 # *       /:controller/:action                    :controller.:action
 
 
-GET /users UserController.Index
-POST /users UserController.Create
-PUT /users UserController.Update
-GET /users/:id UserController.Show
-DELETE /users/:id UserController.Delete
+GET /user UserController.Index
+POST /user UserController.Create
+PUT /user/:id UserController.Update
+PUT /user UserController.CreateAll
+GET /user/:id UserController.Show
+DELETE /user/:id UserController.Delete
+DELETE /user UserController.DeleteAll
