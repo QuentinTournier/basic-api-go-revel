@@ -1,0 +1,24 @@
+language: go
+
+go:
+  - 1.9.x
+
+install:
+  # Setting environments variables
+  - export PATH=$PATH:$HOME/gopath/bin
+  - export REVEL_BRANCH="develop"
+  - 'if [[ "$TRAVIS_BRANCH" == "master" ]]; then export REVEL_BRANCH="master"; fi'
+  - 'echo "Travis branch: $TRAVIS_BRANCH, Revel dependency branch: $REVEL_BRANCH"'
+  - git clone -b $REVEL_BRANCH git://github.com/revel/modules ../modules/
+  - git clone -b $REVEL_BRANCH git://github.com/revel/cmd ../cmd/
+  - git clone -b $REVEL_BRANCH git://github.com/revel/config ../config/
+  - git clone -b $REVEL_BRANCH git://github.com/revel/cron ../cron/
+  - go get -v github.com/revel/revel/...
+  - go get -v github.com/revel/cmd/revel
+  - go get -v gopkg.in/mgo.v2
+
+before_script:
+  - cp ./conf/app.conf.dist.test ./conf/app.conf
+  
+script:
+  - revel test github.com/PolytechLyon/cloud-project-equipe-8 dev
