@@ -7,12 +7,12 @@ import (
 	"encoding/json"
 	"github.com/PolytechLyon/cloud-project-equipe-8/app/models"
 	"strconv"
+	"github.com/kpawlik/geojson"
 )
 
 type UserController struct{
  *revel.Controller
 }
-
 
 func (c UserController) Index() revel.Result {
 	var (
@@ -25,6 +25,8 @@ func (c UserController) Index() revel.Result {
 
 	if err != nil{
 		page = 1
+	} else if page < 1 {
+		page = 1
 	}
 
 	users, err = models.GetUsers(page)
@@ -35,6 +37,105 @@ func (c UserController) Index() revel.Result {
 	}
 	c.Response.Status = 200
     return c.RenderJSON(users)
+}
+
+func (c UserController) FindByName() revel.Result {
+	var (
+		users []models.User
+		err error
+		page int
+		name string
+	)
+
+	page, err = strconv.Atoi(c.Params.Get("page"))
+	if err != nil {
+		page = 1
+	} else if page < 1 {
+		page = 1
+	}
+
+	name = c.Params.Get("name")
+
+	users, err = models.GetUsersByName(name, page)
+	if err != nil{
+		errResp := buildErrResponse(err,"500")
+		c.Response.Status = 500
+		return c.RenderJSON(errResp)
+	}
+	c.Response.Status = 200
+	return c.RenderJSON(users)
+}
+
+func (c UserController) FindByAge() revel.Result {
+	var (
+		users []models.User
+		err error
+		page int
+		age int
+	)
+
+	page, err = strconv.Atoi(c.Params.Get("page"))
+	if err != nil {
+		page = 1
+	} else if page < 1 {
+		page = 1
+	}
+
+	age, err = strconv.Atoi(c.Params.Get("eq"))
+	if err == nil {
+		users, err = models.GetUsersByAgeEq(age, page)
+	} else {
+		age, err = strconv.Atoi(c.Params.Get("gt"))
+		if err == nil {
+			users, err = models.GetUsersByAgeGt(age, page)
+		} else {
+			err = errors.New("Invalid age args")
+		}
+	}
+
+	if err != nil{
+		errResp := buildErrResponse(err,"500")
+		c.Response.Status = 500
+		return c.RenderJSON(errResp)
+	}
+	c.Response.Status = 200
+	return c.RenderJSON(users)
+}
+
+func (c UserController) FindByPosition() revel.Result {
+	var (
+		users []models.User
+		err error
+		page int
+		lon float64
+		lat float64
+	)
+
+	page, err = strconv.Atoi(c.Params.Get("page"))
+	if err != nil {
+		page = 1
+	} else if page < 1 {
+		page = 1
+	}
+
+	lon, err = strconv.ParseFloat(c.Params.Get("lon"), 64)
+	if err != nil {
+		lon = 0
+	}
+
+	lat, err = strconv.ParseFloat(c.Params.Get("lat"), 64)
+	if err != nil {
+		lat = 0
+	}
+
+	users, err = models.GetUsersByPosition(geojson.Coordinate{geojson.CoordType(lon), geojson.CoordType(lat)}, page)
+	if err != nil{
+		errResp := buildErrResponse(err,"500")
+		c.Response.Status = 500
+		return c.RenderJSON(errResp)
+	}
+	c.Response.Status = 200
+	return c.RenderJSON(users)
 }
 
 func (c UserController) Show(id string) revel.Result {  
