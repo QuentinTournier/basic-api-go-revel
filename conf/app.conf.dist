@@ -12,7 +12,7 @@ app.name = myapp
 # (and detect) user modification.
 # Keep this string secret or users will be able to inject arbitrary cookie values
 # into your application
-app.secret = So7XmY83v1J5LTV0FBNNXL4bX1nZCPqZbxOetxJ2EcaVIYvZqTZkfH03gUe36IuZ
+app.secret = REVEL_SECRET
 
 # Revel running behind proxy like nginx, haproxy, etc.
 app.behind.proxy = false
@@ -104,7 +104,7 @@ module.static = github.com/revel/modules/static
 # Section: dev
 # This section is evaluated when running Revel in dev mode. Like so:
 #   `revel run path/to/myapp`
-[dev]
+[dev.server]
 
 # This sets `revel.DevMode` for use in-app.
 # Example:
@@ -190,7 +190,7 @@ mongo.maxPool = 20
 #   `revel run path/to/myapp prod`
 # See:
 #  [dev] section for documentation of the various settings
-[prod]
+[prod.server]
 
 mode.dev = false
 
@@ -212,3 +212,19 @@ log.request.output = log/%(app.name)s-requests.json
 mongo.database = prod_cloud_project
 mongo.path = localhost
 mongo.maxPool = 20
+
+[dev.travis]
+mode.dev = true
+results.pretty = true
+watch = true
+watch.mode = normal
+module.testrunner = github.com/revel/modules/testrunner
+log.all.filter.module.app = stdout
+log.error.nfilter.module.app = stderr
+log.crit.output = stderr
+log.request.output = stdout
+mongo.database = mydb_test
+mongo.path = localhost
+mongo.maxPool = 20
+
+
