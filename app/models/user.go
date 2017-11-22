@@ -5,7 +5,7 @@ import (
 	"github.com/PolytechLyon/cloud-project-equipe-8/app/models/mongodb"
 	"time"
 	"encoding/json"
-	"fmt"
+	"github.com/kpawlik/geojson"
 )
 
 const ctLayout = "2006-01-02"
@@ -71,6 +71,41 @@ func DeleteAllUser() error{
 // GetUsers Get all User from database and returns
 // list of User on success
 func GetUsers(page int) ([]User, error) {
+	return GetUsersWithQuery(nil, page)
+}
+
+func GetUsersByName(name string, page int) ([]User, error) {
+	return GetUsersWithQuery(bson.M{"firstName": name}, page)
+}
+
+func GetUsersByPosition(position geojson.Coordinate, page int) ([]User, error) {
+	return GetUsersWithQuery(bson.M{"position": bson.M{"coordinates": bson.M{"$near": position}}}, page)
+}
+
+func GetUsersByDate(date time.Time, selector string, page int) ([]User, error) {
+	return GetUsersWithQuery(bson.M{"birthDay": bson.M{selector: date}}, page)
+}
+
+func GetUsersByAge(age int, selector string, page int) ([]User, error) {
+	now := time.Now()
+	then := now.AddDate(-age, 0, 0)
+
+	return GetUsersByDate(then, selector, page)
+}
+
+func GetUsersByAgeEq(age int, page int) ([]User, error) {
+	return GetUsersByAge(age, "$eq", page)
+}
+
+func GetUsersByAgeGt(age int, page int) ([]User, error) {
+	return GetUsersByAge(age, "$lt", page)
+}
+
+func GetUsersByAgeLt(age int, page int) ([]User, error) {
+	return GetUsersByAge(age, "$gt", page)
+}
+
+func GetUsersWithQuery(query interface{}, page int) ([]User, error) {
 	var (
 		users []User
 		err   error
@@ -79,7 +114,7 @@ func GetUsers(page int) ([]User, error) {
 	c := newUserCollection()
 	defer c.Close()
 
-	err = c.Session.Find(nil).Sort("-birthDay").Skip((page-1)*100).Limit(100).All(&users)
+	err = c.Session.Find(query).Sort("-birthDay").Skip((page-1)*100).Limit(100).All(&users)
 	return users, err
 }
 
@@ -102,8 +137,6 @@ func GetUser(id bson.ObjectId) (User, error) {
 func (u *User) MarshalJSON() ([]byte, error) {
 	type Alias User
 
-	fmt.Println(u.BirthDay)
-
 	return json.Marshal(&struct {
 		BirthDay string `json:"birthDay"`
 		*Alias
@@ -124,8 +157,6 @@ func (u *User) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-
-	fmt.Println(aux.BirthDay)
 
 	var err error
 	u.BirthDay, err = time.Parse(ctLayout, aux.BirthDay)
