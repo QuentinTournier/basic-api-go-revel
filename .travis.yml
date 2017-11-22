@@ -3,6 +3,9 @@ language: go
 go:
   - 1.9.x
 
+services:
+  - mongodb
+  
 install:
   # Setting environments variables
   - export PATH=$PATH:$HOME/gopath/bin
@@ -18,7 +21,8 @@ install:
   - go get -v gopkg.in/mgo.v2
 
 before_script:
-  - cp ./conf/app.conf.dist.test ./conf/app.conf
+  - cp ./conf/app.conf.dist ./conf/app.conf
+  - sed -i -e 's/REVEL_SECRET/$REVEL_SECRET/g' ./conf/app.conf
   
 script:
-  - revel test github.com/PolytechLyon/cloud-project-equipe-8 dev
+  - revel test github.com/PolytechLyon/cloud-project-equipe-8 dev.travis
