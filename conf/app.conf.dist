@@ -181,7 +181,7 @@ log.request.output = stdout
 
 
 mongo.database = cloud_project
-mongo.path = localhost
+mongo.path = mongodb
 mongo.maxPool = 20
 
 ################################################################################
@@ -209,8 +209,8 @@ log.crit.output = log/%(app.name)-critical.json # Log all critical to file
 #   log.request.output = %(app.name)s-request.json
 log.request.output = log/%(app.name)s-requests.json
 
-mongo.database = prod_cloud_project
-mongo.path = localhost
+mongo.database = cloud_project
+mongo.path = mongodb
 mongo.maxPool = 20
 
 [dev.travis]
