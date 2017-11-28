@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	//"github.com/kpawlik/geojson"
 	"github.com/kpawlik/geojson"
-	"fmt"
 )
 
 type JSONPoint geojson.Point
@@ -46,9 +45,6 @@ func (p *JSONPoint) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-
-	fmt.Println(aux.Lon)
-	fmt.Println(aux.Lat)
 
 	p.Coordinates = geojson.Coordinate{geojson.CoordType(aux.Lon), geojson.CoordType(aux.Lat)}
 	return nil
