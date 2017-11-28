@@ -12,10 +12,8 @@ services:
           - ./data/db:/data/db
 
   appgo:
+        image: andzura:cloud-project
         container_name: "appgo"
-        build:
-          context: .
-          dockerfile: Dockerfile
         ports:
             - 80:9000
         links:

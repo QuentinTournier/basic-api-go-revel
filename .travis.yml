@@ -23,6 +23,17 @@ install:
 before_script:
   - cp ./conf/app.conf.dist ./conf/app.conf
   - sed -i -e 's/REVEL_SECRET/$REVEL_SECRET/g' ./conf/app.conf
+  - sleep 15
   
 script:
   - revel test github.com/PolytechLyon/cloud-project-equipe-8 dev.travis
+  
+after_success:
+  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+  - export REPO=$DOCKER_USER/cloud-project
+  - export TAG=`if [ “$TRAVIS_BRANCH” == “master” ]; then echo “latest”; else echo $TRAVIS_BRANCH ; fi`
+  - echo $REPO:$TAG:$COMMIT
+  - docker build -f Dockerfile -t $REPO:$COMMIT .
+  - docker tag $REPO:$COMMIT $REPO:$TAG
+  - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
+  - docker push $REPO
