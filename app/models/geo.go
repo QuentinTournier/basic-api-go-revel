@@ -46,6 +46,7 @@ func (p *JSONPoint) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	p.Type = "Point"
 	p.Coordinates = geojson.Coordinate{geojson.CoordType(aux.Lon), geojson.CoordType(aux.Lat)}
 	return nil
 }
