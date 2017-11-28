@@ -8,7 +8,8 @@ import (
 	"github.com/kpawlik/geojson"
 )
 
-const ctLayout = "2006-01-02"
+const ctLayoutAccept = "1/2/2006"
+const ctLayoutReturn = "01/02/2006"
 
 type User struct{
 	ID     bson.ObjectId     `json:"id" bson:"_id"`
@@ -64,7 +65,7 @@ func DeleteAllUser() error{
 	c := newUserCollection()
 	defer c.Close()
 
-	err := c.Session.DropCollection()
+	_, err := c.Session.RemoveAll(bson.D{})
 	return err
 }
 
@@ -75,7 +76,7 @@ func GetUsers(page int) ([]User, error) {
 }
 
 func GetUsersByName(name string, page int) ([]User, error) {
-	return GetUsersWithQuery(bson.M{"firstName": name}, page)
+	return GetUsersWithQuery(bson.M{"lastName": bson.M{"$regex": name}}, page)
 }
 
 func GetUsersByPosition(position geojson.Coordinate, page int) ([]User, error) {
@@ -114,7 +115,7 @@ func GetUsersWithQuery(query interface{}, page int) ([]User, error) {
 	c := newUserCollection()
 	defer c.Close()
 
-	err = c.Session.Find(query).Sort("-birthDay").Skip((page-1)*100).Limit(100).All(&users)
+	err = c.Session.Find(query).Sort("-birthDay").Skip(page*100).Limit(100).All(&users)
 	return users, err
 }
 
@@ -141,7 +142,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		BirthDay string `json:"birthDay"`
 		*Alias
 	}{
-		BirthDay: u.BirthDay.Format(ctLayout),
+		BirthDay: u.BirthDay.Format(ctLayoutReturn),
 		Alias:    (*Alias)(u),
 	})
 }
@@ -159,6 +160,6 @@ func (u *User) UnmarshalJSON(data []byte) error {
 	}
 
 	var err error
-	u.BirthDay, err = time.Parse(ctLayout, aux.BirthDay)
+	u.BirthDay, err = time.Parse(ctLayoutAccept, aux.BirthDay)
 	return err
 }

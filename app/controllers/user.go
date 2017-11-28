@@ -4,7 +4,7 @@ import (
 	"errors"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/revel/revel"
-	"encoding/json"
+	//"encoding/json"
 	"github.com/PolytechLyon/cloud-project-equipe-8/app/models"
 	"strconv"
 	"github.com/kpawlik/geojson"
@@ -23,10 +23,10 @@ func (c UserController) Index() revel.Result {
 
 	page, err = strconv.Atoi(c.Params.Get("page"))
 
-	if err != nil{
-		page = 1
-	} else if page < 1 {
-		page = 1
+	if err != nil {
+		page = 0
+	} else if page < 0 {
+		page = 0
 	}
 
 	users, err = models.GetUsers(page)
@@ -36,7 +36,12 @@ func (c UserController) Index() revel.Result {
 		return c.RenderJSON(errResp)
 	}
 	c.Response.Status = 200
-    return c.RenderJSON(users)
+
+	if(users == nil){
+		users = []models.User{};
+	}
+
+    return c.RenderJSON(&users)
 }
 
 func (c UserController) FindByName() revel.Result {
@@ -49,12 +54,12 @@ func (c UserController) FindByName() revel.Result {
 
 	page, err = strconv.Atoi(c.Params.Get("page"))
 	if err != nil {
-		page = 1
-	} else if page < 1 {
-		page = 1
+		page = 0
+	} else if page < 0 {
+		page = 0
 	}
 
-	name = c.Params.Get("name")
+	name = c.Params.Get("term")
 
 	users, err = models.GetUsersByName(name, page)
 	if err != nil{
@@ -62,8 +67,13 @@ func (c UserController) FindByName() revel.Result {
 		c.Response.Status = 500
 		return c.RenderJSON(errResp)
 	}
+
+	if(users == nil){
+		users = []models.User{};
+	}
+
 	c.Response.Status = 200
-	return c.RenderJSON(users)
+	return c.RenderJSON(&users)
 }
 
 func (c UserController) FindByAge() revel.Result {
@@ -76,9 +86,9 @@ func (c UserController) FindByAge() revel.Result {
 
 	page, err = strconv.Atoi(c.Params.Get("page"))
 	if err != nil {
-		page = 1
-	} else if page < 1 {
-		page = 1
+		page = 0
+	} else if page < 0 {
+		page = 0
 	}
 
 	age, err = strconv.Atoi(c.Params.Get("eq"))
@@ -98,8 +108,13 @@ func (c UserController) FindByAge() revel.Result {
 		c.Response.Status = 500
 		return c.RenderJSON(errResp)
 	}
+
+	if(users == nil){
+		users = []models.User{};
+	}
+
 	c.Response.Status = 200
-	return c.RenderJSON(users)
+	return c.RenderJSON(&users)
 }
 
 func (c UserController) FindByPosition() revel.Result {
@@ -113,9 +128,9 @@ func (c UserController) FindByPosition() revel.Result {
 
 	page, err = strconv.Atoi(c.Params.Get("page"))
 	if err != nil {
-		page = 1
-	} else if page < 1 {
-		page = 1
+		page = 0
+	} else if page < 0 {
+		page = 0
 	}
 
 	lon, err = strconv.ParseFloat(c.Params.Get("lon"), 64)
@@ -134,101 +149,107 @@ func (c UserController) FindByPosition() revel.Result {
 		c.Response.Status = 500
 		return c.RenderJSON(errResp)
 	}
+
+	if(users == nil){
+		users = []models.User{};
+	}
+
 	c.Response.Status = 200
-	return c.RenderJSON(users)
+	return c.RenderJSON(&users)
 }
 
-func (c UserController) Show(id string) revel.Result {  
+func (c UserController) Show(id string) revel.Result {
     var (
     	user models.User
     	err error
-    	userID bson.ObjectId 
+    	userID bson.ObjectId
     )
 
-    if id == ""{
-    	errResp := buildErrResponse(errors.New("Invalid user id format"),"400")
+    if id == "" {
+    	errResp := buildErrResponse(errors.New("Invalid user id format 'null'"),"400")
     	c.Response.Status = 400
     	return c.RenderJSON(errResp)
     }
 
     userID, err = convertToObjectIdHex(id)
-    if err != nil{
-    	errResp := buildErrResponse(errors.New("Invalid user id format"),"400")
-    	c.Response.Status = 400
+    if err != nil {
+	    println(err)
+    	errResp := buildErrResponse(errors.New("Invalid user id format"),"404")
+    	c.Response.Status = 404
     	return c.RenderJSON(errResp)
     }
 
     user, err = models.GetUser(userID)
     if err != nil{
-    	errResp := buildErrResponse(err,"500")
-    	c.Response.Status = 500
+    	errResp := buildErrResponse(err,"404")
+    	c.Response.Status = 404
     	return c.RenderJSON(errResp)
     }
-  
+
     c.Response.Status = 200
-    return c.RenderJSON(user)
+    return c.RenderJSON(&user)
 }
 
-func (c UserController) Create() revel.Result {  
-    var (
-    	user models.User
-    	err error
-    )
+func (c UserController) Create(user *models.User) revel.Result {
+	    var (
+		err error
+	    	//createdUser models.User
+	    )
 
-    err = json.NewDecoder(c.Request.GetBody()).Decode(&user)
+	*user, err = models.AddUser(*user)
 	if err != nil {
-		errResp := buildErrResponse(err, "403")
-		c.Response.Status = 403
+		errResp := buildErrResponse(err, "500")
+		c.Response.Status = 500
 		return c.RenderJSON(errResp)
 	}
 
-	user, err = models.AddUser(user)
-	if err != nil{
-		errResp := buildErrResponse(err,"500")
-    	c.Response.Status = 500
-    	return c.RenderJSON(errResp)
-	}
+	//user.ID = createdUser.ID
+
     c.Response.Status = 201
-    return c.RenderJSON(user)
+    return c.RenderJSON(&user)
 }
 
-func (c UserController) Update(id string) revel.Result {
+func (c UserController) Update(id string, user *models.User) revel.Result {
 	var (
-    	user models.User
-    	err error
-    )
-    err = json.NewDecoder(c.Request.GetBody()).Decode(&user)
-	if err != nil{
-		errResp := buildErrResponse(err,"400")
-    	c.Response.Status = 400
-    	return c.RenderJSON(errResp)
+		//user models.User
+		userID bson.ObjectId
+		err error
+    	)
+
+	userID, err = convertToObjectIdHex(id)
+	if err != nil {
+		errResp := buildErrResponse(errors.New("Invalid user id format"),"400")
+		c.Response.Status = 400
+		return c.RenderJSON(errResp)
 	}
 
+	user.ID = userID
 	err = user.UpdateUser()
 	if err != nil{
 		errResp := buildErrResponse(err,"500")
-    	c.Response.Status = 500
-    	return c.RenderJSON(errResp)
+    		c.Response.Status = 500
+    		return c.RenderJSON(errResp)
 	}
-    return c.RenderJSON(user)
+
+    	return c.RenderJSON(&user)
 }
 
-func (c UserController) Delete(id string) revel.Result { 
+func (c UserController) Delete(id string) revel.Result {
 	var (
     	err error
     	user models.User
-    	userID bson.ObjectId 
+    	userID bson.ObjectId
     )
      if id == ""{
-    	errResp := buildErrResponse(errors.New("Invalid user id format"),"400")
+    	errResp := buildErrResponse(errors.New("Invalid user id format 'null'"),"400")
     	c.Response.Status = 400
     	return c.RenderJSON(errResp)
     }
 
     userID, err = convertToObjectIdHex(id)
     if err != nil{
-    	errResp := buildErrResponse(errors.New("Invalid user id format"),"400")
-    	c.Response.Status = 400
+    	errResp := buildErrResponse(errors.New("Invalid user id format"),"500")
+    	c.Response.Status = 500
     	return c.RenderJSON(errResp)
     }
 
@@ -241,11 +262,12 @@ func (c UserController) Delete(id string) revel.Result {
 	err = user.DeleteUser()
 	if err != nil{
 		errResp := buildErrResponse(err,"500")
-    	c.Response.Status = 500
-    	return c.RenderJSON(errResp)
-	} 
-	c.Response.Status = 204
-    return c.RenderJSON(nil)
+    		c.Response.Status = 500
+    		return c.RenderJSON(errResp)
+	}
+	c.Response.Status = 200
+
+    return c.RenderJSON(Empty{})
 }
 
 func (c UserController) DeleteAll() revel.Result {
@@ -256,30 +278,26 @@ func (c UserController) DeleteAll() revel.Result {
 	err = models.DeleteAllUser()
 	if err != nil{
 		errResp := buildErrResponse(err,"500")
-	c.Response.Status = 500
-	return c.RenderJSON(errResp)
+		c.Response.Status = 500
+		return c.RenderJSON(errResp)
 	}
-	c.Response.Status = 204
+	c.Response.Status = 200
 
-    return c.RenderJSON(nil)
+    return c.RenderJSON(Empty{})
 }
 
 
 func (c UserController) CreateAll() revel.Result {
 	var (
-		users []models.User
 		err error
+		users []*models.User
 	)
 
-	err = json.NewDecoder(c.Request.GetBody()).Decode(&users)
-	if err != nil {
-		errResp := buildErrResponse(err, "403")
-		c.Response.Status = 403
-		return c.RenderJSON(errResp)
-	}
+	c.Params.BindJSON(&users)
 
 	for _,user := range users {
-		user, err = models.AddUser(user)
+		*user, err = models.AddUser(*user)
+
 		if err != nil{
 			errResp := buildErrResponse(err,"500")
 			c.Response.Status = 500
@@ -287,6 +305,13 @@ func (c UserController) CreateAll() revel.Result {
 		}
 	}
 
+	if(users == nil){
+		users = []*models.User{};
+	}
+
 	c.Response.Status = 201
-	return c.RenderJSON(nil)
+	return c.RenderJSON(&users)
+}
+
+type Empty struct {
 }
