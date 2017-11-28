@@ -5,6 +5,10 @@ go:
 
 services:
   - mongodb
+
+env:
+  global:
+     - COMMIT=${TRAVIS_COMMIT::6}
   
 install:
   # Setting environments variables
@@ -29,8 +33,8 @@ script:
   - revel test github.com/PolytechLyon/cloud-project-equipe-8 dev.travis
   
 after_success:
-  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-  - export REPO=$DOCKER_USER/cloud-project
+  - docker login -e $DOCKER_HUB_EMAIL -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASS
+  - export REPO=$DOCKER_HUB_USER/cloud-project
   - export TAG=`if [ “$TRAVIS_BRANCH” == “master” ]; then echo “latest”; else echo $TRAVIS_BRANCH ; fi`
   - echo $REPO:$TAG:$COMMIT
   - docker build -f Dockerfile -t $REPO:$COMMIT .
