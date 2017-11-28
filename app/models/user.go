@@ -6,6 +6,7 @@ import (
 	"time"
 	"encoding/json"
 	"github.com/kpawlik/geojson"
+	"gopkg.in/mgo.v2"
 )
 
 const ctLayoutAccept = "1/2/2006"
@@ -21,7 +22,24 @@ type User struct{
 
 
 func newUserCollection()  *mongodb.Collection  {
-   return mongodb.NewCollectionSession("users")
+	var (
+		c *mongodb.Collection
+		err error
+	)
+
+	c = mongodb.NewCollectionSession("users")
+
+	// Index
+	index := mgo.Index{
+		Key:        []string{"$2dsphere:position"},
+	}
+
+	err = c.Session.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+   	return c
 }
 
 // AddUser insert a new User into database and returns
@@ -79,8 +97,20 @@ func GetUsersByName(name string, page int) ([]User, error) {
 	return GetUsersWithQuery(bson.M{"lastName": bson.M{"$regex": name}}, page)
 }
 
-func GetUsersByPosition(position geojson.Coordinate, page int) ([]User, error) {
-	return GetUsersWithQuery(bson.M{"position": bson.M{"coordinates": bson.M{"$near": position}}}, page)
+func GetUsersByPosition(position *geojson.Point) ([]User, error) {
+	var (
+		users []User
+		err   error
+		query interface{}
+	)
+
+	c := newUserCollection()
+	defer c.Close()
+
+	query = bson.M{"position": bson.M{"$near": bson.M{"$geometry": position}}}
+
+	err = c.Session.Find(query).Limit(10).All(&users)
+	return users, err
 }
 
 func GetUsersByDate(date time.Time, selector string, page int) ([]User, error) {

@@ -143,7 +143,7 @@ func (c UserController) FindByPosition() revel.Result {
 		lat = 0
 	}
 
-	users, err = models.GetUsersByPosition(geojson.Coordinate{geojson.CoordType(lon), geojson.CoordType(lat)}, page)
+	users, err = models.GetUsersByPosition(geojson.NewPoint(geojson.Coordinate{geojson.CoordType(lon), geojson.CoordType(lat)}))
 	if err != nil{
 		errResp := buildErrResponse(err,"500")
 		c.Response.Status = 500
