@@ -11,4 +11,4 @@ RUN set -x \
 
 ADD . src/github.com/PolytechLyon/cloud-project-equipe-8
 
-ENTRYPOINT ["revel","run","github.com/PolytechLyon/cloud-project-equipe-8", "dev.server"]
+ENTRYPOINT ["revel","run","github.com/PolytechLyon/cloud-project-equipe-8", "prod.server"]
