@@ -8,7 +8,9 @@ RUN set -x \
     && go get -v github.com/revel/revel \
     && go get -v github.com/revel/cmd/revel \
     && go get -v gopkg.in/mgo.v2 \
-    && go get -v github.com/kpawlik/geojson
+    && go get -v github.com/kpawlik/geojson \
+    && go get -v github.com/valyala/fasthttp \
+    && go get -v github.com/revel/modules/server-engine/fasthttp
 
 ADD . src/github.com/PolytechLyon/cloud-project-equipe-8
 
