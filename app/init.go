@@ -27,7 +27,8 @@ func init() {
 		HeaderFilter,                  // Add some security based headers
 		revel.InterceptorFilter,       // Run interceptors around the action.
 		revel.CompressFilter,          // Compress the result.
-		revel.ActionInvoker,           // Invoke the action.
+		revel.ActionInvoker,           // Invoke the action.*
+
 	}
 
 	// Register startup functions with OnAppStart

@@ -16,8 +16,6 @@ func (c *Collection) Connect() {
 }
 
 func NewCollectionSession(name string) *Collection {
-	println(DBNAME)
-	println(name)
 	var c = Collection{
 		db:   newDBSession(DBNAME),
 		name: name,

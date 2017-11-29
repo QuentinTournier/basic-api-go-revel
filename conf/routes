@@ -27,7 +27,12 @@ GET     /public/*filepath                       Static.Serve("public")
 
 
 GET /user UserController.Index
+GET /user/search UserController.FindByName
+GET /user/age UserController.FindByAge
+GET /user/nearest UserController.FindByPosition
 POST /user UserController.Create
-PUT /user UserController.Update
+PUT /user/:id UserController.Update
+PUT /user UserController.CreateAll
 GET /user/:id UserController.Show
 DELETE /user/:id UserController.Delete
+DELETE /user UserController.DeleteAll

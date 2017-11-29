@@ -53,5 +53,5 @@ func (t *AppTest) TestPutUserRespond(){
 
 func (t *AppTest) TestDeleteUserRespond(){
 	t.Delete("/user")
-	t.AssertContentType("text/html; charset=utf-8")
+	t.AssertContentType("application/json; charset=utf-8")
 }
