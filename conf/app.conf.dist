@@ -24,9 +24,7 @@ http.addr =
 # The port on which to listen.
 http.port = 9000
 
-# Whether to use SSL or not.
-http.ssl = true
-
+# Whether to use SSL or not
 
 # Path to an X509 certificate file, if using SSL.
 http.sslcert = /etc/server/cert/certificate.crt
@@ -108,6 +106,7 @@ server.engine = fasthttp
 # This section is evaluated when running Revel in dev mode. Like so:
 #   `revel run path/to/myapp`
 [dev.server]
+http.ssl = true
 
 # This sets `revel.DevMode` for use in-app.
 # Example:
@@ -194,7 +193,6 @@ mongo.maxPool = 20
 # See:
 #  [dev] section for documentation of the various settings
 [prod.server]
-
 mode.dev = false
 
 results.pretty = false
@@ -217,6 +215,7 @@ mongo.path = mongodb
 mongo.maxPool = 20
 
 [dev.travis]
+http.ssl = false
 mode.dev = true
 results.pretty = true
 watch = true
